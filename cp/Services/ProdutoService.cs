@@ -1,9 +1,15 @@
 using cp.Models;
 using cp.Data;
 using Microsoft.EntityFrameworkCore;
+using System;
 
 namespace cp.Services
 {
+    public class ProdutoException : Exception
+    {
+        public ProdutoException(string message) : base(message) { }
+    }
+
     public class ProdutoService
     {
         private readonly EstoqueDbContext _context;
@@ -21,10 +27,12 @@ namespace cp.Services
             return true;
         }
 
-        public void CadastrarProduto(Produto produto)
+        public void CadastrarProduto(Produto produto, DateTime? dataValidade = null)
         {
             if (!ValidarProduto(produto))
-                throw new Exception("Dados do produto inválidos.");
+                throw new ProdutoException("Dados do produto inválidos.");
+            if (produto.Categoria == CategoriaProduto.PERECIVEL && dataValidade == null)
+                throw new ProdutoException("Produto perecível deve ter data de validade.");
             _context.Produtos.Add(produto);
             _context.SaveChanges();
         }
